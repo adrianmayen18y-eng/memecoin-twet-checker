@@ -404,8 +404,7 @@ const sampleTweets = [
 
 // ⚠️ Cambia esto por la URL de tu backend cuando lo despliegues, ej:
 // "https://tu-proyecto.vercel.app/api/tweets"
-const TWEETS_ENDPOINT = null; // null = usa datos de ejemplo mientras tanto
-
+const TWEETS_ENDPOINT = "https://memecoin-twet-checker.vercel.app/api/tweets";
 function extractTickers(text){
   const found = text.match(/\$[A-Za-z]{2,10}/g);
   return found ? found[0].toUpperCase() : null;
