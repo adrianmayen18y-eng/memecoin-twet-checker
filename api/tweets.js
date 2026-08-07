@@ -9,10 +9,11 @@
 // CUENTAS A MONITOREAR: edítalas abajo en ACCOUNTS_TO_TRACK
 
 const ACCOUNTS_TO_TRACK = [
-  // pon aquí los @usuarios (sin la arroba) que quieres monitorear
   "elonmusk",
-  "example_account_1",
-  "example_account_2",
+  "VitalikButerin",
+  "cz_binance",
+  "WatcherGuru",
+  "whale_alert",
 ];
 
 // cache simple en memoria para no gastar cuota del tier gratis
