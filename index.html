@@ -458,12 +458,12 @@ body{padding-bottom:60px;}
 
   <div class="sidebar">
     <div class="side-logo">S</div>
-    <div class="side-item active" title="Dashboard">⬚</div>
-    <div class="side-item" title="Señales">◈</div>
-    <div class="side-item" title="Mercado">▲</div>
-    <div class="side-item" title="Alertas">◔</div>
+    <div class="side-item active" title="Dashboard" data-target="section-dashboard">⬚</div>
+    <div class="side-item" title="Señales" data-target="section-senales">◈</div>
+    <div class="side-item" title="Mercado" data-target="section-mercado">▲</div>
+    <div class="side-item" title="Alertas" data-target="section-alertas">◔</div>
     <div class="sidebar-bottom">
-      <div class="side-item" title="Configuración">⚙</div>
+      <div class="side-item" title="Configuración" data-target="section-config">⚙</div>
     </div>
   </div>
 
@@ -473,10 +473,10 @@ body{padding-bottom:60px;}
       <div class="nav-left">
         <div class="brand"><span class="dot"></span>SEÑAL</div>
         <div class="nav-links">
-          <a class="active" href="#">Dashboard</a>
-          <a href="#">Señales</a>
-          <a href="#">Mercado</a>
-          <a href="#">Historial</a>
+          <a class="active" href="#" data-target="section-dashboard">Dashboard</a>
+          <a href="#" data-target="section-senales">Señales</a>
+          <a href="#" data-target="section-mercado">Mercado</a>
+          <a href="#" data-target="section-alertas">Historial</a>
         </div>
       </div>
       <div class="nav-right">
@@ -497,7 +497,7 @@ body{padding-bottom:60px;}
       <p>Esta página junta dos cosas en un solo lugar: qué está diciendo la gente influyente en redes sobre una moneda, y qué está pasando de verdad con su precio. Cuando las dos coinciden, te lo marcamos.</p>
     </div>
 
-    <div class="stats-bar">
+    <div class="stats-bar" id="section-dashboard">
       <div class="stat-cell">
         <div class="stat-label">Monedas monitoreadas</div>
         <div class="stat-value" id="statTokens">—</div>
@@ -540,13 +540,13 @@ body{padding-bottom:60px;}
       <div class="item"><span class="swatch" style="background:var(--down)"></span>Precio bajando</div>
     </div>
 
-    <div class="movers-panel" id="moversPanel" style="margin:24px 32px 0;">
+    <div class="movers-panel" id="section-mercado" style="margin:24px 32px 0;">
       <div class="movers-head">Top Movers <span style="color:var(--ink-dim); font-weight:400;">— mayor movimiento en 24h de todo lo que monitoreas</span></div>
       <div id="moversList"></div>
     </div>
 
     <div class="grid">
-      <div class="col">
+      <div class="col" id="section-senales">
         <div class="col-head">
           <h2>Señales sociales
             <span class="help">?<span class="tip">Posts recientes de cuentas con muchos seguidores hablando de alguna moneda. Aquí es donde suele empezar el "hype".</span></span>
@@ -571,9 +571,23 @@ body{padding-bottom:60px;}
       </div>
     </div>
 
-    <div class="activity-panel" style="margin:24px 32px 0;">
+    <div class="activity-panel" id="section-alertas" style="margin:24px 32px 0;">
       <div class="movers-head">Actividad en tiempo real</div>
       <div id="activityFeed" class="activity-feed"></div>
+    </div>
+
+    <div class="activity-panel" id="section-config" style="margin:24px 32px 0;">
+      <div class="movers-head">Configuración</div>
+      <div style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-dim);">Notificaciones del navegador</span>
+          <button id="notifyBtn" style="background:rgba(255,255,255,0.05); border:1px solid var(--hair); color:var(--ink); border-radius:8px; padding:7px 14px; font-family:'JetBrains Mono', monospace; font-size:11px; cursor:pointer;">Activar</button>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-dim);">Tu lista de monedas personalizadas</span>
+          <button id="clearWatchlistBtn" style="background:rgba(255,93,122,0.12); border:1px solid var(--hair); color:var(--down); border-radius:8px; padding:7px 14px; font-family:'JetBrains Mono', monospace; font-size:11px; cursor:pointer;">Vaciar lista</button>
+        </div>
+      </div>
     </div>
 
     <div class="footnote">
@@ -915,6 +929,42 @@ function tickClock(){
 }
 setInterval(tickClock, 1000);
 
+function setupNavigation(){
+  const navButtons = document.querySelectorAll('[data-target]');
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.getElementById(btn.dataset.target);
+      if(target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // actualiza estado activo en sidebar y navbar por separado
+      document.querySelectorAll('.side-item[data-target]').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.nav-links a[data-target]').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll(`[data-target="${btn.dataset.target}"]`).forEach(b => b.classList.add('active'));
+    });
+  });
+}
+
+function setupConfigButtons(){
+  const notifyBtn = document.getElementById('notifyBtn');
+  if(notifyBtn){
+    const updateLabel = () => {
+      notifyBtn.textContent = (window.Notification && Notification.permission === 'granted') ? 'Activadas ✓' : 'Activar';
+    };
+    updateLabel();
+    notifyBtn.addEventListener('click', () => {
+      if(window.Notification) Notification.requestPermission().then(updateLabel);
+    });
+  }
+  const clearBtn = document.getElementById('clearWatchlistBtn');
+  if(clearBtn){
+    clearBtn.addEventListener('click', () => {
+      localStorage.setItem('senal_watchlist', '[]');
+      logActivity('info', 'Vaciaste tu lista de monedas personalizadas');
+      loadMarket();
+    });
+  }
+}
+
 function setupAddTokenButton(){
   const btn = document.getElementById('addTokenBtn');
   const input = document.getElementById('addTokenInput');
@@ -931,6 +981,8 @@ function setupAddTokenButton(){
 }
 
 async function init(){
+  setupNavigation();
+  setupConfigButtons();
   setupAddTokenButton();
   renderActivity();
   logActivity('info', 'Panel iniciado — cargando datos en vivo…');
