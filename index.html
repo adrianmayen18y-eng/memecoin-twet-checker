@@ -243,6 +243,16 @@ body{padding-bottom:60px;}
 .mood{ font-size:11px; color:var(--ink-dim); font-family:'JetBrains Mono', monospace; }
 .heat-wrap{ flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;}
 .heat{ height:100%; border-radius:3px; }
+.spark-wrap{ margin-top:10px; height:34px; }
+.spark-wrap svg{ width:100%; height:100%; display:block; }
+.mentioned-badge{
+  position:absolute; top:14px; right:14px;
+  font-family:'JetBrains Mono', monospace; font-size:9px;
+  padding:3px 8px; border-radius:20px;
+  background:rgba(139,92,246,0.22); color:var(--violet);
+  letter-spacing:0.03em;
+}
+.card.mentioned{ box-shadow:inset 0 0 0 1.5px var(--violet); }
 .up{ color:var(--up); }
 .down{ color:var(--down); }
 
@@ -374,7 +384,7 @@ body{padding-bottom:60px;}
   <div class="col">
     <div class="col-head">
       <h2>Mercado en vivo
-        <span class="help">?<span class="tip">Cada tarjeta es una moneda: su logo, precio actual y si está subiendo o bajando ahora mismo. La barra de abajo muestra qué tanto se está moviendo.</span></span>
+        <span class="help">?<span class="tip">Cada tarjeta es una moneda: su logo, precio actual, y una gráfica que crece mostrando su trayectoria reciente. Si tiene borde morado, es porque acaba de mencionarse en una noticia.</span></span>
       </h2>
       <span class="n" id="marketCount">—</span>
     </div>
@@ -412,11 +422,18 @@ function extractTickers(text){
 }
 
 function timeAgo(dateStr){
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
-  if(diff < 1) return 'justo ahora';
-  if(diff < 60) return diff + 'm';
-  return Math.floor(diff/60) + 'h';
+  const then = new Date(dateStr).getTime();
+  if(isNaN(then)) return '';
+  const diffMin = Math.floor((Date.now() - then) / 60000);
+  if(diffMin < 1) return 'justo ahora';
+  if(diffMin < 60) return diffMin + 'm';
+  const diffH = Math.floor(diffMin / 60);
+  if(diffH < 24) return diffH + 'h';
+  const diffD = Math.floor(diffH / 24);
+  return diffD + 'd';
 }
+
+let mentionedTickers = new Set();
 
 async function renderTweets(){
   const feed = document.getElementById('tweetFeed');
@@ -454,9 +471,11 @@ async function renderTweets(){
       feed.innerHTML = '<div class="empty">sin menciones nuevas todavía.</div>';
     }
     tweets.forEach(t=>{
-      const ticker = extractTickers(t.text);
       const row = document.createElement('div');
       row.className = 'row';
+      const highlighted = t.ticker
+        ? t.text.replace(t.ticker, `<span class="ticker">${t.ticker}</span>`)
+        : t.text;
       row.innerHTML = `
         <div class="avatar">${(t.handle||'??').replace('@','').slice(0,2).toUpperCase()}</div>
         <div class="row-body">
@@ -464,21 +483,48 @@ async function renderTweets(){
             <span class="handle">${t.handle}</span>
             <span class="time">${timeAgo(t.created_at)}</span>
           </div>
-          <div class="text">${t.text}</div>
+          <div class="text">${highlighted}</div>
         </div>`;
       feed.appendChild(row);
     });
     document.getElementById('tweetCount').textContent = tweets.length + ' recientes';
+    tweets.forEach(t=>{ if(t.ticker) mentionedTickers.add(t.ticker.replace('$','')); });
   }catch(e){
     feed.innerHTML = '<div class="empty">no se pudo conectar al backend de señales.</div>';
   }
+}
+
+const priceHistory = {}; // guarda el historial de precio de cada moneda mientras la página está abierta
+const MAX_HISTORY = 20;
+
+function buildSparkline(points, isUp){
+  if(points.length < 2){
+    return `<div class="spark-wrap"><svg viewBox="0 0 100 34"><line x1="0" y1="17" x2="100" y2="17" stroke="var(--hair)" stroke-width="1"/></svg></div>`;
+  }
+  const min = Math.min(...points), max = Math.max(...points);
+  const range = (max - min) || 1;
+  const step = 100 / (points.length - 1);
+  const coords = points.map((p, i) => {
+    const x = i * step;
+    const y = 30 - ((p - min) / range) * 26;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const color = isUp ? 'var(--up)' : 'var(--down)';
+  return `<div class="spark-wrap"><svg viewBox="0 0 100 34" preserveAspectRatio="none">
+    <polyline points="${coords}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg></div>`;
 }
 
 async function loadMarket(){
   const marketFeed = document.getElementById('marketFeed');
   const tickerTrack = document.getElementById('tickerTrack');
   const statusline = document.getElementById('statusline');
-  const queries = ['popcat','wif dogwifhat','bonk','pnut peanut','moodeng'];
+  const baseQueries = ['popcat','wif dogwifhat','bonk','pnut peanut','moodeng'];
+  // agrega monedas que se mencionaron en las noticias y no están ya en la lista base
+  const dynamicQueries = [...mentionedTickers].filter(
+    t => !baseQueries.some(b => b.toUpperCase().includes(t))
+  );
+  const queries = [...baseQueries, ...dynamicQueries];
   try{
     const results = await Promise.all(queries.map(q =>
       fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`)
@@ -503,23 +549,31 @@ async function loadMarket(){
       const change = p.priceChange?.h24 ?? 0;
       const isUp = change >= 0;
       const dir = isUp ? 'up' : 'down';
-      const price = p.priceUsd ? '$' + Number(p.priceUsd).toFixed(6) : '—';
+      const priceNum = Number(p.priceUsd) || 0;
+      const price = p.priceUsd ? '$' + priceNum.toFixed(6) : '—';
       const vol = p.volume?.h24 || 0;
       const heatPct = Math.max(6, Math.min(100, (vol / maxVol) * 100));
       const symbol = (p.baseToken?.symbol || '???').toUpperCase();
       const name = p.baseToken?.name || symbol;
       const logoUrl = p.info?.imageUrl;
       const initials = symbol.slice(0,2);
+      const isMentioned = mentionedTickers.has(symbol);
 
-      let mood, moodLabel;
+      // guarda este precio en el historial de esta moneda
+      if(!priceHistory[symbol]) priceHistory[symbol] = [];
+      priceHistory[symbol].push(priceNum);
+      if(priceHistory[symbol].length > MAX_HISTORY) priceHistory[symbol].shift();
+
+      let mood;
       if(Math.abs(change) < 2){ mood='tranquila'; }
       else if(Math.abs(change) < 10){ mood = isUp ? 'subiendo' : 'bajando'; }
       else { mood = isUp ? 'disparada 🚀' : 'cayendo fuerte'; }
 
       const card = document.createElement('div');
-      card.className = `card ${dir}`;
+      card.className = `card ${dir}${isMentioned ? ' mentioned' : ''}`;
       card.innerHTML = `
         <div class="glow"></div>
+        ${isMentioned ? '<span class="mentioned-badge">mencionada ahora</span>' : ''}
         <div class="card-top">
           <div class="logo">${logoUrl ? `<img src="${logoUrl}" onerror="this.parentNode.textContent='${initials}'">` : initials}</div>
           <div>
@@ -529,6 +583,7 @@ async function loadMarket(){
         </div>
         <div class="card-price">${price}</div>
         <div class="card-change ${dir}">${isUp ? '▲' : '▼'} ${Math.abs(change).toFixed(1)}%</div>
+        ${buildSparkline(priceHistory[symbol], isUp)}
         <div class="card-foot">
           <span class="mood">${mood}</span>
           <div class="heat-wrap"><div class="heat" style="width:${heatPct}%; background:${isUp ? 'var(--up)' : 'var(--down)'}"></div></div>
@@ -568,9 +623,13 @@ function tickClock(){
 }
 setInterval(tickClock, 1000);
 
-renderTweets();
-loadMarket();
+async function init(){
+  await renderTweets();
+  loadMarket();
+}
+init();
 setInterval(loadMarket, 30000);
+setInterval(renderTweets, 120000); // revisa noticias nuevas cada 2 minutos
 </script>
 
 </body>
