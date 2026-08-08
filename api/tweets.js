@@ -1,25 +1,36 @@
 // api/tweets.js
-// Esta función corre en el servidor (nunca en el navegador del usuario),
-// así que tu Bearer Token de X queda protegido.
-//
-// CONFIGURACIÓN NECESARIA EN VERCEL:
-// 1. En tu proyecto de Vercel, ve a Settings > Environment Variables
-// 2. Agrega: X_BEARER_TOKEN = tu_token_secreto_aqui
-//
-// CUENTAS A MONITOREAR: edítalas abajo en ACCOUNTS_TO_TRACK
+// Lee noticias reales y en vivo de Watcher Guru (fuente de noticias cripto confiable)
+// vía su RSS público. No necesita ningún token, cuenta, ni permiso de nadie.
+// Esta función corre en el servidor para evitar problemas de CORS en el navegador.
 
-const ACCOUNTS_TO_TRACK = [
-  "elonmusk",
-  "VitalikButerin",
-  "cz_binance",
-  "WatcherGuru",
-  "whale_alert",
-];
-
-// cache simple en memoria para no gastar cuota del tier gratis
-// (se reinicia si el servidor duerme, pero evita pedir a X en cada visita)
 let cache = { data: null, timestamp: 0 };
-const CACHE_MS = 5 * 60 * 1000; // 5 minutos
+const CACHE_MS = 2 * 60 * 1000; // 2 minutos
+
+const RSS_URL = "https://watcher.guru/news/author/watcherguru/feed";
+
+function extractTicker(text) {
+  const found = text.match(/\$[A-Za-z]{2,10}/g);
+  return found ? found[0].toUpperCase() : null;
+}
+
+// Extrae los <item> de un XML de RSS sin librerías externas
+function parseRSS(xml) {
+  const items = [];
+  const itemBlocks = xml.split("<item>").slice(1);
+  for (const block of itemBlocks) {
+    const titleMatch = block.match(/<title>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?<\/title>/s);
+    const dateMatch = block.match(/<pubDate>(.*?)<\/pubDate>/s);
+    const linkMatch = block.match(/<link>(.*?)<\/link>/s);
+    if (titleMatch) {
+      items.push({
+        title: titleMatch[1].trim(),
+        date: dateMatch ? dateMatch[1].trim() : null,
+        link: linkMatch ? linkMatch[1].trim() : null,
+      });
+    }
+  }
+  return items;
+}
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -29,35 +40,21 @@ export default async function handler(req, res) {
     return res.status(200).json({ tweets: cache.data, cached: true });
   }
 
-  const token = process.env.X_BEARER_TOKEN;
-  if (!token) {
-    return res.status(500).json({ error: "Falta configurar X_BEARER_TOKEN en Vercel" });
-  }
-
   try {
-    const query = ACCOUNTS_TO_TRACK.map(u => `from:${u}`).join(" OR ");
-    const url = `https://api.twitter.com/2/tweets/search/recent?query=${encodeURIComponent(query)}&max_results=20&tweet.fields=created_at,author_id&expansions=author_id&user.fields=username,name`;
-
-    const response = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
+    const response = await fetch(RSS_URL);
     if (!response.ok) {
-      const errText = await response.text();
-      return res.status(response.status).json({ error: "Error consultando X", detail: errText });
+      return res.status(502).json({ error: "No se pudo leer el feed de noticias" });
     }
+    const xml = await response.text();
+    const items = parseRSS(xml).slice(0, 20);
 
-    const json = await response.json();
-
-    const users = {};
-    (json.includes?.users || []).forEach(u => { users[u.id] = u; });
-
-    const tweets = (json.data || []).map(t => ({
-      id: t.id,
-      text: t.text,
-      created_at: t.created_at,
-      handle: "@" + (users[t.author_id]?.username || "desconocido"),
-      name: users[t.author_id]?.name || "",
+    const tweets = items.map((item, i) => ({
+      id: String(i) + "-" + (item.link || item.title),
+      text: item.title,
+      created_at: item.date ? new Date(item.date).toISOString() : new Date().toISOString(),
+      handle: "@WatcherGuru",
+      name: "Watcher Guru",
+      ticker: extractTicker(item.title),
     }));
 
     cache = { data: tweets, timestamp: now };
