@@ -268,7 +268,130 @@ body{padding-bottom:60px;}
 }
 .footnote b{ color:var(--ink); }
 
-/* ---------- how it works ---------- */
+/* ---------- app shell: sidebar + navbar ---------- */
+.app-shell{ display:flex; min-height:100vh; }
+
+.sidebar{
+  width:72px; flex-shrink:0;
+  background:rgba(0,0,0,0.18);
+  border-right:1px solid var(--hair);
+  display:flex; flex-direction:column; align-items:center;
+  padding:22px 0; gap:8px;
+  position:sticky; top:0; height:100vh;
+}
+.sidebar .side-logo{
+  width:34px; height:34px; border-radius:9px; margin-bottom:18px;
+  background:linear-gradient(135deg, var(--indigo), var(--violet));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:14px;
+}
+.side-item{
+  width:44px; height:44px; border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--ink-dim); cursor:pointer; font-size:18px;
+  transition:background 0.15s, color 0.15s;
+}
+.side-item:hover{ background:rgba(255,255,255,0.05); color:var(--ink); }
+.side-item.active{ background:rgba(139,92,246,0.16); color:var(--violet); }
+.side-item .side-label{
+  font-family:'JetBrains Mono', monospace; font-size:8px;
+  position:absolute; margin-top:38px; letter-spacing:0.02em;
+}
+.sidebar-bottom{ margin-top:auto; }
+
+.main-area{ flex:1; min-width:0; }
+
+.navbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 32px;
+  border-bottom:1px solid var(--hair);
+  position:sticky; top:0; z-index:10;
+  background:rgba(18,10,46,0.85); backdrop-filter:blur(10px);
+}
+.navbar .nav-left{ display:flex; align-items:center; gap:26px; }
+.navbar .brand{
+  font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:18px;
+  display:flex; align-items:center; gap:8px;
+}
+.nav-links{ display:flex; gap:20px; }
+.nav-links a{
+  font-family:'JetBrains Mono', monospace; font-size:12px;
+  color:var(--ink-dim); text-decoration:none; letter-spacing:0.02em;
+  padding:6px 2px; border-bottom:2px solid transparent;
+}
+.nav-links a.active{ color:var(--ink); border-color:var(--violet); }
+.nav-right{ display:flex; align-items:center; gap:14px; }
+.wallet-btn{
+  font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:500;
+  padding:9px 16px; border-radius:8px;
+  background:linear-gradient(90deg, var(--indigo), var(--violet));
+  color:#fff; border:none; cursor:pointer;
+}
+.bell{
+  width:34px; height:34px; border-radius:9px;
+  border:1px solid var(--hair);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--ink-dim); font-size:15px; position:relative;
+}
+.bell .bell-dot{
+  position:absolute; top:6px; right:7px;
+  width:6px; height:6px; border-radius:50%; background:var(--up);
+}
+
+/* ---------- stats bar ---------- */
+.stats-bar{
+  display:grid; grid-template-columns:repeat(4, 1fr);
+  gap:1px; background:var(--hair);
+  margin:24px 32px 0; border:1px solid var(--hair); border-radius:10px; overflow:hidden;
+}
+@media(max-width:800px){ .stats-bar{ grid-template-columns:repeat(2, 1fr);} }
+.stat-cell{ background:rgba(255,255,255,0.02); padding:18px 20px; }
+.stat-cell .stat-label{
+  font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--ink-dim);
+  text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px;
+}
+.stat-cell .stat-value{
+  font-family:'Space Grotesk', sans-serif; font-size:24px; font-weight:700;
+  display:flex; align-items:baseline; gap:6px;
+}
+.stat-cell .stat-value small{ font-size:12px; color:var(--ink-dim); font-weight:400; font-family:'JetBrains Mono', monospace; }
+
+/* ---------- top movers ---------- */
+.movers-panel, .activity-panel{
+  border:1px solid var(--hair); border-radius:10px;
+  background:rgba(255,255,255,0.015); overflow:hidden;
+}
+.movers-head{
+  padding:14px 20px; border-bottom:1px solid var(--hair);
+  font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:13px;
+}
+.mover-row{
+  display:flex; align-items:center; gap:12px;
+  padding:12px 20px; border-bottom:1px solid var(--hair);
+  font-family:'JetBrains Mono', monospace; font-size:12px;
+}
+.mover-row:last-child{ border-bottom:none; }
+.mover-rank{ color:var(--ink-dim); width:18px; }
+.mover-sym{ font-weight:700; width:80px; }
+.mover-bar-wrap{ flex:1; height:16px; display:flex; align-items:center; }
+.mover-bar{ height:8px; border-radius:4px; }
+.mover-pct{ width:70px; text-align:right; font-weight:700; }
+
+/* ---------- activity feed ---------- */
+.activity-feed{ max-height:280px; overflow-y:auto; }
+.activity-row{
+  display:flex; gap:10px; align-items:flex-start;
+  padding:11px 20px; border-bottom:1px solid var(--hair);
+  font-size:12px;
+}
+.activity-row:last-child{ border-bottom:none; }
+.activity-icon{
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:11px;
+  background:rgba(139,92,246,0.16); color:var(--violet);
+}
+.activity-time{ color:var(--ink-dim); font-family:'JetBrains Mono', monospace; font-size:10px; margin-left:auto; flex-shrink:0; }
+
 .how{
   margin:0 48px 40px;
   display:grid;
@@ -331,70 +454,133 @@ body{padding-bottom:60px;}
 </head>
 <body>
 
-<div class="topbar">
-  <div class="brand"><span class="dot"></span>SEÑAL</div>
-  <div class="status" id="statusline">conectando a mercado en vivo…</div>
-</div>
+<div class="app-shell">
 
-<div class="ticker-wrap">
-  <div class="ticker-track" id="tickerTrack">
-    <span>cargando precios en vivo…</span>
-  </div>
-</div>
-
-<div class="hero">
-  <h1>Cuando alguien <em>influyente</em> tuitea,<br>tú lo ves primero.</h1>
-  <p>Esta página junta dos cosas en un solo lugar: qué está diciendo la gente influyente en redes sobre una moneda, y qué está pasando de verdad con su precio. Cuando las dos coinciden, te lo marcamos.</p>
-</div>
-
-<div class="how">
-  <div class="how-step">
-    <span class="num">01</span>
-    <h3>Leemos las menciones</h3>
-    <p>Monitoreamos cuentas conocidas en redes sociales cuando mencionan una moneda (ej. $POPCAT, $BONK).</p>
-  </div>
-  <div class="how-step">
-    <span class="num">02</span>
-    <h3>Revisamos el precio real</h3>
-    <p>Al mismo tiempo, checamos si esa moneda realmente se está moviendo en el mercado — precio, volumen, cuánta gente la compra.</p>
-  </div>
-  <div class="how-step">
-    <span class="num">03</span>
-    <h3>Te avisamos si coinciden</h3>
-    <p>Si una mención y un movimiento real pasan juntos, la señal se marca en morado. Eso es lo que vale la pena mirar.</p>
-  </div>
-</div>
-
-<div class="legend">
-  <div class="item"><span class="swatch" style="background:var(--violet)"></span>Mención + movimiento de precio al mismo tiempo</div>
-  <div class="item"><span class="swatch" style="background:var(--up)"></span>Precio subiendo</div>
-  <div class="item"><span class="swatch" style="background:var(--down)"></span>Precio bajando</div>
-</div>
-
-<div class="grid">
-  <div class="col">
-    <div class="col-head">
-      <h2>Señales sociales
-        <span class="help">?<span class="tip">Posts recientes de cuentas con muchos seguidores hablando de alguna moneda. Aquí es donde suele empezar el "hype".</span></span>
-      </h2>
-      <span class="n" id="tweetCount">—</span>
+  <div class="sidebar">
+    <div class="side-logo">S</div>
+    <div class="side-item active" title="Dashboard">⬚</div>
+    <div class="side-item" title="Señales">◈</div>
+    <div class="side-item" title="Mercado">▲</div>
+    <div class="side-item" title="Alertas">◔</div>
+    <div class="sidebar-bottom">
+      <div class="side-item" title="Configuración">⚙</div>
     </div>
-    <div id="tweetFeed"></div>
   </div>
-  <div class="col">
-    <div class="col-head">
-      <h2>Mercado en vivo
-        <span class="help">?<span class="tip">Cada tarjeta es una moneda: su logo, precio actual, y una gráfica que crece mostrando su trayectoria reciente. Si tiene borde morado, es porque acaba de mencionarse en una noticia.</span></span>
-      </h2>
-      <span class="n" id="marketCount">—</span>
-    </div>
-    <div class="live-meta" style="padding:10px 24px 0;"><span class="liveDot"></span><span id="lastUpdated">esperando datos…</span></div>
-    <div id="marketFeed" class="mkt-grid"></div>
-  </div>
-</div>
 
-<div class="footnote">
-  <b>Nota:</b> los precios y volumen de la columna "Mercado en vivo" se obtienen en vivo de la API pública de Dexscreener. Las menciones sociales de la columna izquierda son datos de ejemplo — conectar una fuente real (X/Telegram) requiere credenciales de API que este prototipo aún no tiene configuradas.
+  <div class="main-area">
+
+    <div class="navbar">
+      <div class="nav-left">
+        <div class="brand"><span class="dot"></span>SEÑAL</div>
+        <div class="nav-links">
+          <a class="active" href="#">Dashboard</a>
+          <a href="#">Señales</a>
+          <a href="#">Mercado</a>
+          <a href="#">Historial</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="status" id="statusline">conectando a mercado en vivo…</div>
+        <div class="bell">🔔<span class="bell-dot"></span></div>
+        <button class="wallet-btn">Conectar wallet</button>
+      </div>
+    </div>
+
+    <div class="ticker-wrap">
+      <div class="ticker-track" id="tickerTrack">
+        <span>cargando precios en vivo…</span>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1>Cuando alguien <em>influyente</em> tuitea,<br>tú lo ves primero.</h1>
+      <p>Esta página junta dos cosas en un solo lugar: qué está diciendo la gente influyente en redes sobre una moneda, y qué está pasando de verdad con su precio. Cuando las dos coinciden, te lo marcamos.</p>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-cell">
+        <div class="stat-label">Monedas monitoreadas</div>
+        <div class="stat-value" id="statTokens">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Menciones recientes</div>
+        <div class="stat-value" id="statMentions">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Coincidencias activas</div>
+        <div class="stat-value" id="statMatches">0</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Última actualización</div>
+        <div class="stat-value" style="font-size:16px;" id="statUpdated">—</div>
+      </div>
+    </div>
+
+    <div class="how">
+      <div class="how-step">
+        <span class="num">01</span>
+        <h3>Leemos las menciones</h3>
+        <p>Monitoreamos cuentas conocidas en redes sociales cuando mencionan una moneda (ej. $POPCAT, $BONK).</p>
+      </div>
+      <div class="how-step">
+        <span class="num">02</span>
+        <h3>Revisamos el precio real</h3>
+        <p>Al mismo tiempo, checamos si esa moneda realmente se está moviendo en el mercado — precio, volumen, cuánta gente la compra.</p>
+      </div>
+      <div class="how-step">
+        <span class="num">03</span>
+        <h3>Te avisamos si coinciden</h3>
+        <p>Si una mención y un movimiento real pasan juntos, la señal se marca en morado. Eso es lo que vale la pena mirar.</p>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="item"><span class="swatch" style="background:var(--violet)"></span>Mención + movimiento de precio al mismo tiempo</div>
+      <div class="item"><span class="swatch" style="background:var(--up)"></span>Precio subiendo</div>
+      <div class="item"><span class="swatch" style="background:var(--down)"></span>Precio bajando</div>
+    </div>
+
+    <div class="movers-panel" id="moversPanel" style="margin:24px 32px 0;">
+      <div class="movers-head">Top Movers <span style="color:var(--ink-dim); font-weight:400;">— mayor movimiento en 24h de todo lo que monitoreas</span></div>
+      <div id="moversList"></div>
+    </div>
+
+    <div class="grid">
+      <div class="col">
+        <div class="col-head">
+          <h2>Señales sociales
+            <span class="help">?<span class="tip">Posts recientes de cuentas con muchos seguidores hablando de alguna moneda. Aquí es donde suele empezar el "hype".</span></span>
+          </h2>
+          <span class="n" id="tweetCount">—</span>
+        </div>
+        <div id="tweetFeed"></div>
+      </div>
+      <div class="col">
+        <div class="col-head">
+          <h2>Mercado en vivo
+            <span class="help">?<span class="tip">Cada tarjeta es una moneda: su logo, precio actual, y una gráfica que crece mostrando su trayectoria reciente. Si tiene borde morado, es porque acaba de mencionarse en una noticia.</span></span>
+          </h2>
+          <span class="n" id="marketCount">—</span>
+        </div>
+        <div class="live-meta" style="padding:10px 24px 0;"><span class="liveDot"></span><span id="lastUpdated">esperando datos…</span></div>
+        <div style="padding:10px 24px 0; display:flex; gap:8px;">
+          <input id="addTokenInput" type="text" placeholder="agregar moneda (ej. slerf)" style="flex:1; background:rgba(255,255,255,0.04); border:1px solid var(--hair); border-radius:8px; padding:8px 12px; color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:12px;">
+          <button id="addTokenBtn" style="background:linear-gradient(90deg, var(--indigo), var(--violet)); border:none; color:#fff; border-radius:8px; padding:8px 16px; font-family:'JetBrains Mono', monospace; font-size:12px; cursor:pointer;">+ agregar</button>
+        </div>
+        <div id="marketFeed" class="mkt-grid"></div>
+      </div>
+    </div>
+
+    <div class="activity-panel" style="margin:24px 32px 0;">
+      <div class="movers-head">Actividad en tiempo real</div>
+      <div id="activityFeed" class="activity-feed"></div>
+    </div>
+
+    <div class="footnote">
+      <b>Nota:</b> los precios y volumen de la columna "Mercado en vivo" se obtienen en vivo de la API pública de Dexscreener. Las menciones sociales vienen del feed público de Watcher Guru.
+    </div>
+
+  </div>
 </div>
 
 <script>
@@ -434,6 +620,22 @@ function timeAgo(dateStr){
 }
 
 let mentionedTickers = new Set();
+
+function getCustomWatchlist(){
+  try{ return JSON.parse(localStorage.getItem('senal_watchlist') || '[]'); }
+  catch(e){ return []; }
+}
+function addToWatchlist(symbol){
+  const list = getCustomWatchlist();
+  const clean = symbol.trim().toLowerCase();
+  if(!clean || list.includes(clean)) return;
+  list.push(clean);
+  localStorage.setItem('senal_watchlist', JSON.stringify(list));
+}
+function removeFromWatchlist(symbol){
+  const list = getCustomWatchlist().filter(s => s !== symbol.toLowerCase());
+  localStorage.setItem('senal_watchlist', JSON.stringify(list));
+}
 
 async function renderTweets(){
   const feed = document.getElementById('tweetFeed');
@@ -488,6 +690,7 @@ async function renderTweets(){
       feed.appendChild(row);
     });
     document.getElementById('tweetCount').textContent = tweets.length + ' recientes';
+    document.getElementById('statMentions').textContent = tweets.length;
     tweets.forEach(t=>{ if(t.ticker) mentionedTickers.add(t.ticker.replace('$','')); });
   }catch(e){
     feed.innerHTML = '<div class="empty">no se pudo conectar al backend de señales.</div>';
@@ -496,6 +699,70 @@ async function renderTweets(){
 
 const priceHistory = {}; // guarda el historial de precio de cada moneda mientras la página está abierta
 const MAX_HISTORY = 20;
+const notifiedMatches = new Set();
+const activityLog = [];
+
+function logActivity(type, message){
+  activityLog.unshift({ type, message, time: new Date() });
+  if(activityLog.length > 30) activityLog.pop();
+  renderActivity();
+}
+
+function renderActivity(){
+  const el = document.getElementById('activityFeed');
+  if(!el) return;
+  if(!activityLog.length){
+    el.innerHTML = '<div class="empty">sin actividad todavía.</div>';
+    return;
+  }
+  el.innerHTML = activityLog.map(a => `
+    <div class="activity-row">
+      <div class="activity-icon">${a.type === 'match' ? '⚡' : '•'}</div>
+      <div>${a.message}</div>
+      <div class="activity-time">${a.time.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'})}</div>
+    </div>`).join('');
+}
+
+function notifyMatch(symbol, change){
+  // sonido corto
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.15);
+  }catch(e){}
+  // notificación del navegador si el usuario la permitió
+  if(window.Notification && Notification.permission === 'granted'){
+    new Notification(`⚡ Coincidencia: $${symbol}`, {
+      body: `Mención reciente + movimiento de ${change.toFixed(1)}%`
+    });
+  }
+}
+
+function renderMovers(pairs){
+  const list = document.getElementById('moversList');
+  if(!list) return;
+  const sorted = [...pairs].sort((a,b) =>
+    Math.abs(b.priceChange?.h24 ?? 0) - Math.abs(a.priceChange?.h24 ?? 0)
+  ).slice(0, 6);
+  const maxAbs = Math.max(...sorted.map(p => Math.abs(p.priceChange?.h24 ?? 0)), 1);
+  list.innerHTML = sorted.map((p, i) => {
+    const change = p.priceChange?.h24 ?? 0;
+    const isUp = change >= 0;
+    const pct = Math.min(100, (Math.abs(change) / maxAbs) * 100);
+    return `
+      <div class="mover-row">
+        <span class="mover-rank">#${i+1}</span>
+        <span class="mover-sym">$${(p.baseToken?.symbol||'???').toUpperCase()}</span>
+        <div class="mover-bar-wrap"><div class="mover-bar" style="width:${pct}%; background:${isUp?'var(--up)':'var(--down)'}"></div></div>
+        <span class="mover-pct" style="color:${isUp?'var(--up)':'var(--down)'}">${isUp?'+':''}${change.toFixed(1)}%</span>
+      </div>`;
+  }).join('');
+}
 
 function buildSparkline(points, isUp){
   if(points.length < 2){
@@ -519,12 +786,13 @@ async function loadMarket(){
   const marketFeed = document.getElementById('marketFeed');
   const tickerTrack = document.getElementById('tickerTrack');
   const statusline = document.getElementById('statusline');
-  const baseQueries = ['popcat','wif dogwifhat','bonk','pnut peanut','moodeng'];
+  const baseQueries = ['popcat','wif dogwifhat','bonk','pnut peanut','moodeng','slerf','mew cat','goatseus maximus','ponke','book of meme','mother iggy','michi'];
+  const customQueries = getCustomWatchlist();
   // agrega monedas que se mencionaron en las noticias y no están ya en la lista base
   const dynamicQueries = [...mentionedTickers].filter(
     t => !baseQueries.some(b => b.toUpperCase().includes(t))
   );
-  const queries = [...baseQueries, ...dynamicQueries];
+  const queries = [...baseQueries, ...dynamicQueries, ...customQueries];
   try{
     const results = await Promise.all(queries.map(q =>
       fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`)
@@ -569,6 +837,17 @@ async function loadMarket(){
       else if(Math.abs(change) < 10){ mood = isUp ? 'subiendo' : 'bajando'; }
       else { mood = isUp ? 'disparada 🚀' : 'cayendo fuerte'; }
 
+      // detecta si es una coincidencia NUEVA (mención + movimiento) para avisar
+      if(isMentioned && Math.abs(change) >= 2 && !notifiedMatches.has(symbol)){
+        notifiedMatches.add(symbol);
+        logActivity('match', `$${symbol} tiene mención reciente + movimiento de ${change.toFixed(1)}% — coincidencia`);
+        notifyMatch(symbol, change);
+      }
+
+      const tf5m = p.priceChange?.m5 ?? 0;
+      const tf1h = p.priceChange?.h1 ?? 0;
+      const tf6h = p.priceChange?.h6 ?? 0;
+
       const card = document.createElement('div');
       card.className = `card ${dir}${isMentioned ? ' mentioned' : ''}`;
       card.innerHTML = `
@@ -583,6 +862,11 @@ async function loadMarket(){
         </div>
         <div class="card-price">${price}</div>
         <div class="card-change ${dir}">${isUp ? '▲' : '▼'} ${Math.abs(change).toFixed(1)}%</div>
+        <div style="display:flex; gap:6px; margin-top:8px; font-family:'JetBrains Mono', monospace; font-size:9px; color:var(--ink-dim);">
+          <span>5m <b style="color:${tf5m>=0?'var(--up)':'var(--down)'}">${tf5m>=0?'+':''}${tf5m.toFixed(1)}%</b></span>
+          <span>1h <b style="color:${tf1h>=0?'var(--up)':'var(--down)'}">${tf1h>=0?'+':''}${tf1h.toFixed(1)}%</b></span>
+          <span>6h <b style="color:${tf6h>=0?'var(--up)':'var(--down)'}">${tf6h>=0?'+':''}${tf6h.toFixed(1)}%</b></span>
+        </div>
         ${buildSparkline(priceHistory[symbol], isUp)}
         <div class="card-foot">
           <span class="mood">${mood}</span>
@@ -593,9 +877,17 @@ async function loadMarket(){
       tickerHTML += `<span>$${symbol} <b>${price}</b> <span class="${dir}">${isUp?'▲':'▼'} ${Math.abs(change).toFixed(1)}%</span></span>`;
     });
 
+    renderMovers(pairs);
+
     tickerTrack.innerHTML = tickerHTML + tickerHTML; // duplicate for seamless loop
     document.getElementById('marketCount').textContent = pairs.length + ' tokens';
     statusline.textContent = 'datos en vivo · dexscreener';
+
+    document.getElementById('statTokens').textContent = pairs.length;
+    document.getElementById('statMatches').textContent =
+      pairs.filter(p => mentionedTickers.has((p.baseToken?.symbol||'').toUpperCase())).length;
+    document.getElementById('statUpdated').textContent =
+      new Date().toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
 
     // marca visualmente que llegaron datos nuevos
     document.querySelectorAll('.card').forEach(c=>{
@@ -623,7 +915,28 @@ function tickClock(){
 }
 setInterval(tickClock, 1000);
 
+function setupAddTokenButton(){
+  const btn = document.getElementById('addTokenBtn');
+  const input = document.getElementById('addTokenInput');
+  if(!btn || !input) return;
+  const submit = () => {
+    if(!input.value.trim()) return;
+    addToWatchlist(input.value);
+    logActivity('info', `Agregaste $${input.value.trim().toUpperCase()} a tu lista de monedas`);
+    input.value = '';
+    loadMarket();
+  };
+  btn.addEventListener('click', submit);
+  input.addEventListener('keydown', e => { if(e.key === 'Enter') submit(); });
+}
+
 async function init(){
+  setupAddTokenButton();
+  renderActivity();
+  logActivity('info', 'Panel iniciado — cargando datos en vivo…');
+  if(window.Notification && Notification.permission === 'default'){
+    Notification.requestPermission();
+  }
   await renderTweets();
   loadMarket();
 }
