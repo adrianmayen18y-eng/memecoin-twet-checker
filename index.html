@@ -422,6 +422,9 @@ body{padding-bottom:60px;}
 }
 
 /* ---------- legend ---------- */
+.view{ animation:fadeIn 0.25s ease; }
+@keyframes fadeIn{ from{ opacity:0; transform:translateY(4px);} to{ opacity:1; transform:translateY(0);} }
+
 .legend{
   display:flex; flex-wrap:wrap; gap:18px;
   margin:0 48px 24px;
@@ -481,7 +484,12 @@ body{padding-bottom:60px;}
       </div>
       <div class="nav-right">
         <div class="status" id="statusline">conectando a mercado en vivo…</div>
-        <div class="bell">🔔<span class="bell-dot"></span></div>
+        <div class="bell" id="bellBtn" style="cursor:pointer; position:relative;">🔔<span class="bell-dot" id="bellDot" style="display:none;"></span>
+          <div id="bellDropdown" style="display:none; position:absolute; top:44px; right:0; width:300px; max-height:340px; overflow-y:auto; background:#1a1040; border:1px solid var(--hair); border-radius:10px; box-shadow:0 12px 32px rgba(0,0,0,0.5); z-index:50;">
+            <div style="padding:12px 16px; border-bottom:1px solid var(--hair); font-family:'Space Grotesk', sans-serif; font-size:13px; font-weight:600;">Notificaciones</div>
+            <div id="bellFeed"></div>
+          </div>
+        </div>
         <button class="wallet-btn">Conectar wallet</button>
       </div>
     </div>
@@ -492,106 +500,142 @@ body{padding-bottom:60px;}
       </div>
     </div>
 
-    <div class="hero">
-      <h1>Cuando alguien <em>influyente</em> tuitea,<br>tú lo ves primero.</h1>
-      <p>Esta página junta dos cosas en un solo lugar: qué está diciendo la gente influyente en redes sobre una moneda, y qué está pasando de verdad con su precio. Cuando las dos coinciden, te lo marcamos.</p>
-    </div>
+    <!-- ============ VISTA: DASHBOARD ============ -->
+    <div class="view" id="section-dashboard">
 
-    <div class="stats-bar" id="section-dashboard">
-      <div class="stat-cell">
-        <div class="stat-label">Monedas monitoreadas</div>
-        <div class="stat-value" id="statTokens">—</div>
+      <div class="hero">
+        <h1>Cuando alguien <em>influyente</em> tuitea,<br>tú lo ves primero.</h1>
+        <p>Esta página junta dos cosas en un solo lugar: qué está diciendo la gente influyente en redes sobre una moneda, y qué está pasando de verdad con su precio. Cuando las dos coinciden, te lo marcamos.</p>
       </div>
-      <div class="stat-cell">
-        <div class="stat-label">Menciones recientes</div>
-        <div class="stat-value" id="statMentions">—</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-label">Coincidencias activas</div>
-        <div class="stat-value" id="statMatches">0</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-label">Última actualización</div>
-        <div class="stat-value" style="font-size:16px;" id="statUpdated">—</div>
-      </div>
-    </div>
 
-    <div class="how">
-      <div class="how-step">
-        <span class="num">01</span>
-        <h3>Leemos las menciones</h3>
-        <p>Monitoreamos cuentas conocidas en redes sociales cuando mencionan una moneda (ej. $POPCAT, $BONK).</p>
-      </div>
-      <div class="how-step">
-        <span class="num">02</span>
-        <h3>Revisamos el precio real</h3>
-        <p>Al mismo tiempo, checamos si esa moneda realmente se está moviendo en el mercado — precio, volumen, cuánta gente la compra.</p>
-      </div>
-      <div class="how-step">
-        <span class="num">03</span>
-        <h3>Te avisamos si coinciden</h3>
-        <p>Si una mención y un movimiento real pasan juntos, la señal se marca en morado. Eso es lo que vale la pena mirar.</p>
-      </div>
-    </div>
-
-    <div class="legend">
-      <div class="item"><span class="swatch" style="background:var(--violet)"></span>Mención + movimiento de precio al mismo tiempo</div>
-      <div class="item"><span class="swatch" style="background:var(--up)"></span>Precio subiendo</div>
-      <div class="item"><span class="swatch" style="background:var(--down)"></span>Precio bajando</div>
-    </div>
-
-    <div class="movers-panel" id="section-mercado" style="margin:24px 32px 0;">
-      <div class="movers-head">Top Movers <span style="color:var(--ink-dim); font-weight:400;">— mayor movimiento en 24h de todo lo que monitoreas</span></div>
-      <div id="moversList"></div>
-    </div>
-
-    <div class="grid">
-      <div class="col" id="section-senales">
-        <div class="col-head">
-          <h2>Señales sociales
-            <span class="help">?<span class="tip">Posts recientes de cuentas con muchos seguidores hablando de alguna moneda. Aquí es donde suele empezar el "hype".</span></span>
-          </h2>
-          <span class="n" id="tweetCount">—</span>
+      <div class="stats-bar">
+        <div class="stat-cell">
+          <div class="stat-label">Monedas monitoreadas</div>
+          <div class="stat-value" id="statTokens">—</div>
         </div>
-        <div id="tweetFeed"></div>
+        <div class="stat-cell">
+          <div class="stat-label">Menciones recientes</div>
+          <div class="stat-value" id="statMentions">—</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">Coincidencias activas</div>
+          <div class="stat-value" id="statMatches">0</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">Última actualización</div>
+          <div class="stat-value" style="font-size:16px;" id="statUpdated">—</div>
+        </div>
       </div>
-      <div class="col">
-        <div class="col-head">
-          <h2>Mercado en vivo
-            <span class="help">?<span class="tip">Cada tarjeta es una moneda: su logo, precio actual, y una gráfica que crece mostrando su trayectoria reciente. Si tiene borde morado, es porque acaba de mencionarse en una noticia.</span></span>
-          </h2>
-          <span class="n" id="marketCount">—</span>
+
+      <div class="how">
+        <div class="how-step">
+          <span class="num">01</span>
+          <h3>Leemos las menciones</h3>
+          <p>Monitoreamos cuentas conocidas en redes sociales cuando mencionan una moneda (ej. $POPCAT, $BONK).</p>
         </div>
-        <div class="live-meta" style="padding:10px 24px 0;"><span class="liveDot"></span><span id="lastUpdated">esperando datos…</span></div>
-        <div style="padding:10px 24px 0; display:flex; gap:8px;">
-          <input id="addTokenInput" type="text" placeholder="agregar moneda (ej. slerf)" style="flex:1; background:rgba(255,255,255,0.04); border:1px solid var(--hair); border-radius:8px; padding:8px 12px; color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:12px;">
-          <button id="addTokenBtn" style="background:linear-gradient(90deg, var(--indigo), var(--violet)); border:none; color:#fff; border-radius:8px; padding:8px 16px; font-family:'JetBrains Mono', monospace; font-size:12px; cursor:pointer;">+ agregar</button>
+        <div class="how-step">
+          <span class="num">02</span>
+          <h3>Revisamos el precio real</h3>
+          <p>Al mismo tiempo, checamos si esa moneda realmente se está moviendo en el mercado — precio, volumen, cuánta gente la compra.</p>
         </div>
-        <div id="marketFeed" class="mkt-grid"></div>
+        <div class="how-step">
+          <span class="num">03</span>
+          <h3>Te avisamos si coinciden</h3>
+          <p>Si una mención y un movimiento real pasan juntos, la señal se marca en morado. Eso es lo que vale la pena mirar.</p>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="item"><span class="swatch" style="background:var(--violet)"></span>Mención + movimiento de precio al mismo tiempo</div>
+        <div class="item"><span class="swatch" style="background:var(--up)"></span>Precio subiendo</div>
+        <div class="item"><span class="swatch" style="background:var(--down)"></span>Precio bajando</div>
+      </div>
+
+      <div class="movers-panel" style="margin:24px 32px 0;">
+        <div class="movers-head">Top Movers <span style="color:var(--ink-dim); font-weight:400;">— mayor movimiento en 24h de todo lo que monitoreas</span></div>
+        <div id="moversListDash"></div>
+      </div>
+
+    </div>
+
+    <!-- ============ VISTA: SEÑALES ============ -->
+    <div class="view" id="section-senales" style="display:none;">
+      <div style="padding:28px 32px 0;">
+        <h1 style="font-family:'Space Grotesk',sans-serif; font-size:24px; margin-bottom:6px;">Señales sociales</h1>
+        <p style="color:var(--ink-dim); font-size:13px; max-width:600px;">Menciones recientes de cuentas y fuentes de noticias cripto sobre monedas meme. Cuando una moneda mencionada aquí también se mueve fuerte en el mercado, se marca como coincidencia.</p>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr; margin:20px 32px;">
+        <div class="col">
+          <div class="col-head">
+            <h2>Todas las menciones</h2>
+            <span class="n" id="tweetCount">—</span>
+          </div>
+          <div id="tweetFeed"></div>
+        </div>
       </div>
     </div>
 
-    <div class="activity-panel" id="section-alertas" style="margin:24px 32px 0;">
-      <div class="movers-head">Actividad en tiempo real</div>
-      <div id="activityFeed" class="activity-feed"></div>
+    <!-- ============ VISTA: MERCADO ============ -->
+    <div class="view" id="section-mercado" style="display:none;">
+      <div style="padding:28px 32px 0;">
+        <h1 style="font-family:'Space Grotesk',sans-serif; font-size:24px; margin-bottom:6px;">Mercado en vivo</h1>
+        <p style="color:var(--ink-dim); font-size:13px; max-width:600px;">Precio, cambio en varios plazos y trayectoria de cada moneda que monitoreas, actualizado cada 30 segundos con datos reales de Dexscreener.</p>
+      </div>
+
+      <div class="movers-panel" style="margin:20px 32px 0;">
+        <div class="movers-head">Top Movers</div>
+        <div id="moversList"></div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr; margin:20px 32px;">
+        <div class="col">
+          <div class="col-head">
+            <h2>Todas las monedas</h2>
+            <span class="n" id="marketCount">—</span>
+          </div>
+          <div class="live-meta" style="padding:10px 24px 0;"><span class="liveDot"></span><span id="lastUpdated">esperando datos…</span></div>
+          <div style="padding:10px 24px 0; display:flex; gap:8px;">
+            <input id="addTokenInput" type="text" placeholder="agregar moneda (ej. slerf)" style="flex:1; background:rgba(255,255,255,0.04); border:1px solid var(--hair); border-radius:8px; padding:8px 12px; color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:12px;">
+            <button id="addTokenBtn" style="background:linear-gradient(90deg, var(--indigo), var(--violet)); border:none; color:#fff; border-radius:8px; padding:8px 16px; font-family:'JetBrains Mono', monospace; font-size:12px; cursor:pointer;">+ agregar</button>
+          </div>
+          <div id="marketFeed" class="mkt-grid"></div>
+        </div>
+      </div>
     </div>
 
-    <div class="activity-panel" id="section-config" style="margin:24px 32px 0;">
-      <div class="movers-head">Configuración</div>
-      <div style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <span style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-dim);">Notificaciones del navegador</span>
-          <button id="notifyBtn" style="background:rgba(255,255,255,0.05); border:1px solid var(--hair); color:var(--ink); border-radius:8px; padding:7px 14px; font-family:'JetBrains Mono', monospace; font-size:11px; cursor:pointer;">Activar</button>
-        </div>
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <span style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-dim);">Tu lista de monedas personalizadas</span>
-          <button id="clearWatchlistBtn" style="background:rgba(255,93,122,0.12); border:1px solid var(--hair); color:var(--down); border-radius:8px; padding:7px 14px; font-family:'JetBrains Mono', monospace; font-size:11px; cursor:pointer;">Vaciar lista</button>
+    <!-- ============ VISTA: ALERTAS / HISTORIAL ============ -->
+    <div class="view" id="section-alertas" style="display:none;">
+      <div style="padding:28px 32px 0;">
+        <h1 style="font-family:'Space Grotesk',sans-serif; font-size:24px; margin-bottom:6px;">Actividad e historial</h1>
+        <p style="color:var(--ink-dim); font-size:13px; max-width:600px;">Registro cronológico de todo lo que detecta el panel: coincidencias, monedas agregadas, y eventos del sistema.</p>
+      </div>
+      <div class="activity-panel" style="margin:20px 32px 0;">
+        <div class="movers-head">Actividad en tiempo real</div>
+        <div id="activityFeed" class="activity-feed" style="max-height:none;"></div>
+      </div>
+    </div>
+
+    <!-- ============ VISTA: CONFIGURACIÓN ============ -->
+    <div class="view" id="section-config" style="display:none;">
+      <div style="padding:28px 32px 0;">
+        <h1 style="font-family:'Space Grotesk',sans-serif; font-size:24px; margin-bottom:6px;">Configuración</h1>
+      </div>
+      <div class="activity-panel" style="margin:20px 32px 0;">
+        <div style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-dim);">Notificaciones del navegador</span>
+            <button id="notifyBtn" style="background:rgba(255,255,255,0.05); border:1px solid var(--hair); color:var(--ink); border-radius:8px; padding:7px 14px; font-family:'JetBrains Mono', monospace; font-size:11px; cursor:pointer;">Activar</button>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-dim);">Tu lista de monedas personalizadas</span>
+            <button id="clearWatchlistBtn" style="background:rgba(255,93,122,0.12); border:1px solid var(--hair); color:var(--down); border-radius:8px; padding:7px 14px; font-family:'JetBrains Mono', monospace; font-size:11px; cursor:pointer;">Vaciar lista</button>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="footnote">
-      <b>Nota:</b> los precios y volumen de la columna "Mercado en vivo" se obtienen en vivo de la API pública de Dexscreener. Las menciones sociales vienen del feed público de Watcher Guru.
+      <b>Nota:</b> los precios y volumen se obtienen en vivo de la API pública de Dexscreener. Las menciones sociales vienen del feed público de Watcher Guru.
     </div>
 
   </div>
@@ -720,6 +764,8 @@ function logActivity(type, message){
   activityLog.unshift({ type, message, time: new Date() });
   if(activityLog.length > 30) activityLog.pop();
   renderActivity();
+  const dot = document.getElementById('bellDot');
+  if(dot) dot.style.display = 'block';
 }
 
 function renderActivity(){
@@ -758,13 +804,13 @@ function notifyMatch(symbol, change){
 }
 
 function renderMovers(pairs){
-  const list = document.getElementById('moversList');
-  if(!list) return;
+  const targets = [document.getElementById('moversList'), document.getElementById('moversListDash')].filter(Boolean);
+  if(!targets.length) return;
   const sorted = [...pairs].sort((a,b) =>
     Math.abs(b.priceChange?.h24 ?? 0) - Math.abs(a.priceChange?.h24 ?? 0)
   ).slice(0, 6);
   const maxAbs = Math.max(...sorted.map(p => Math.abs(p.priceChange?.h24 ?? 0)), 1);
-  list.innerHTML = sorted.map((p, i) => {
+  const html = sorted.map((p, i) => {
     const change = p.priceChange?.h24 ?? 0;
     const isUp = change >= 0;
     const pct = Math.min(100, (Math.abs(change) / maxAbs) * 100);
@@ -776,6 +822,7 @@ function renderMovers(pairs){
         <span class="mover-pct" style="color:${isUp?'var(--up)':'var(--down)'}">${isUp?'+':''}${change.toFixed(1)}%</span>
       </div>`;
   }).join('');
+  targets.forEach(el => el.innerHTML = html);
 }
 
 function buildSparkline(points, isUp){
@@ -931,17 +978,48 @@ setInterval(tickClock, 1000);
 
 function setupNavigation(){
   const navButtons = document.querySelectorAll('[data-target]');
+  const views = document.querySelectorAll('.view');
   navButtons.forEach(btn => {
     btn.addEventListener('click', e => {
       e.preventDefault();
-      const target = document.getElementById(btn.dataset.target);
-      if(target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // actualiza estado activo en sidebar y navbar por separado
-      document.querySelectorAll('.side-item[data-target]').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.nav-links a[data-target]').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll(`[data-target="${btn.dataset.target}"]`).forEach(b => b.classList.add('active'));
+      const targetId = btn.dataset.target;
+      views.forEach(v => { v.style.display = (v.id === targetId) ? '' : 'none'; });
+      document.querySelectorAll('[data-target]').forEach(b => {
+        b.classList.toggle('active', b.dataset.target === targetId);
+      });
+      document.querySelector('.main-area').scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
+}
+
+function setupBell(){
+  const bellBtn = document.getElementById('bellBtn');
+  const dropdown = document.getElementById('bellDropdown');
+  if(!bellBtn || !dropdown) return;
+  bellBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = dropdown.style.display === 'block';
+    dropdown.style.display = isOpen ? 'none' : 'block';
+    if(!isOpen) document.getElementById('bellDot').style.display = 'none';
+    renderBellFeed();
+  });
+  document.addEventListener('click', () => { dropdown.style.display = 'none'; });
+  dropdown.addEventListener('click', e => e.stopPropagation());
+}
+
+function renderBellFeed(){
+  const el = document.getElementById('bellFeed');
+  if(!el) return;
+  if(!activityLog.length){
+    el.innerHTML = '<div style="padding:16px; font-size:12px; color:var(--ink-dim);">Sin notificaciones todavía.</div>';
+    return;
+  }
+  el.innerHTML = activityLog.slice(0, 10).map(a => `
+    <div class="activity-row" style="padding:10px 16px;">
+      <div class="activity-icon">${a.type === 'match' ? '⚡' : '•'}</div>
+      <div style="font-size:11px;">${a.message}</div>
+      <div class="activity-time">${a.time.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'})}</div>
+    </div>`).join('');
 }
 
 function setupConfigButtons(){
@@ -982,6 +1060,7 @@ function setupAddTokenButton(){
 
 async function init(){
   setupNavigation();
+  setupBell();
   setupConfigButtons();
   setupAddTokenButton();
   renderActivity();
